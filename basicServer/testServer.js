@@ -11,33 +11,48 @@ const wss = new WebSocket.Server({ server });
 // tell the server where our webpage files are
 app.use(express.static('public'));
 
+// node sensehat led library
+const sense = require("sense-hat-led").sync;
+
+//default image to display on start
+var X = [0, 255, 0];  // Green
+var O = [255, 255, 255];  // White
+var leds = [
+O, O, O, O, O, O, O, O,
+O, X, X, O, O, X, X, O,
+O, X, X, O, O, X, X, O,
+O, O, O, O, O, O, O, O,
+O, X, O, O, O, O, X, O,
+O, X, O, O, O, O, X, O,
+O, X, X, X, X, X, X, O,
+O, O, O, O, O, O, O, O
+];
+
+sense.setPixels(leds);
+
 wss.on('connection', (ws) => {
 	console.log('client connected!');
 
-	//set a repeating function that sends a message to the client every second
-	const helloInterval = setInterval(() => {
-		ws.send('hello world!')
-	}, 1000);
-	
+	//send the client a welcome message when first connecting
+	ws.send(JSON.stringify(["msg", 'hello client!']));
+
 	//whenever we receive a message from a client, process the data accordingly
 	ws.on('message', (e) => {
-		console.log("type");
-		console.log(typeof(e));
-		if(typeof(e.data) == 'string') {
-			console.log('client sent: \"' + data + '\"');
-		} else {
-			console.log(e.toString());
-//			console.log(JSON.stringify(e));
-//			console.log('client sent a non-string message: ' + JSON.stringify(e.data));
-//			ws.send(JSON.stringify(e));
-			ws.send(e.toString());
+		let data = JSON.parse(e);
+ 		if (data[0] == 'leds') { //when we get an led array, display it
+			console.log('leds received');
+			sense.setPixels(data[1]);
+		} else if (data[0] == 'msg') { //when we get a msg string, scroll it
+			console.log('msg received');
+			let msg = data[1];
+			sense.showMessage(msg);
+			ws.send(JSON.stringify(["msg", "you sent: " + data[1]]));
 		}
 	});
 
 	//when a client disconnects, clear up the functions we have associated with them
 	ws.on('close', () => {
 		console.log('client left');
-		clearInterval(helloInterval);
 	});
 });
 

@@ -13,7 +13,7 @@ let messageReceived = "";
 //raspi variables
 let colorMatrix = []; //node-sense-hat wants a 1D array of 64 elements
 let ledArray = []; //for displaying/drawing on webpage
-let cellSize = 20;
+let cellSize = 50;
 let raspiRotation = {x: 0, y: 0, z: 0};
 
 function setup(){
@@ -23,20 +23,19 @@ function setup(){
 	// interface setup
 	colorPicker = createColorPicker(color('green'));
 	
-	messageInput = createInput("message to send to server");
-	messageInput.position(width/20, height/12);
+	messageInput = createInput("type message here");
+	messageInput.position(width/20, 1.5 * height/12);
 	messageSend = createButton("Send Message");
 	messageSend.position(width/20, 2 * height/12);
 	messageSend.mousePressed(() => {
 		console.log(messageInput.value());
-		socket.send(messageInput.value().toString());
-//socket.send(JSON.stringify(messageInput.value()));
+		socket.send(JSON.stringify(["msg", messageInput.value().toString()]));
 	});
 	textSize(height/20);
 	textAlign(LEFT, CENTER);
 
 	colorPicker = createColorPicker(color('green'));
-	colorPicker.position(width/4, 5 * height/12);
+	colorPicker.position(width/8, 6 * height/12);
 	rectMode(CENTER);
 	stroke(255);
 
@@ -59,12 +58,15 @@ function setup(){
 	urlString = urlString.replace("http", "ws");
 	socket = new WebSocket(urlString);
 	socket.onopen = () => {
-		socket.send("hello friend!".toString());
+		socket.send(JSON.stringify(["msg", "hello server!"]));
 	}
 	socket.onmessage = (result) => {
-		//messageReceived = result.toString(); 
-		console.log(result);
-		messageReceived = JSON.stringify(result.data);
+		//console.log(result);
+		//console.log(JSON.parse(result.data));
+		let data = JSON.parse(result.data);
+		if (data[0] == "msg"){
+			messageReceived = data[1];
+		}
 	}
 }
 
@@ -72,9 +74,10 @@ function draw() {
 	background(200, 220, 255);
 	textSize(height/50);
 	fill(0);
-	text("Message from Server:", 2 * width/3, 2 * height/10);
-	text(messageReceived, 2 * width/3, 3 * height/10);
+	text("Message from Server:", width/2, 2 * height/10);
+	text(messageReceived, width/2, 3 * height/10);
 
+	text("Color:", width/8, 5.5 * height/12);
 	for (let i = 0; i < ledArray.length; i++) {
 		let x = width/4 + (ledArray[i].x * cellSize);
 		let y = (6 * height/12) + (ledArray[i].y * cellSize);
@@ -84,7 +87,7 @@ function draw() {
 	}
 }
 
-function mouseDragged() {
+function mouseDragged() { //drag across cells to change their colors
 	for (let i = 0; i < ledArray.length; i++) {
 		let x = width/4 + (ledArray[i].x * cellSize);
                 let y = (6 * height/12) + (ledArray[i].y * cellSize);
@@ -95,10 +98,11 @@ function mouseDragged() {
 	}
 }
 
-function mouseReleased() {
-	for (let i = 0; i < ledArray.length; i++){
-		colorMatrix[i] = ledArray[i].c;
+function mouseReleased() { //only send color array when we release the mouse (else too many messages)
+	if (mouseY > height/2){ //hacky way to make sure we don't send leds when clicking top buttons
+		for (let i = 0; i < ledArray.length; i++){
+			colorMatrix[i] = ledArray[i].c;
+		}
+		socket.send(JSON.stringify(["leds", colorMatrix]));
 	}
-	socket.send(colorMatrix);
 }
-
