@@ -85,7 +85,7 @@ https://learn.adafruit.com/usb-audio-cards-with-a-raspberry-pi/recording-audio
 
 You first need to make sure your [raspberry pi has node and npm installed](https://lindevs.com/install-node-js-and-npm-on-raspberry-pi/).
 
-For this guide we'll set up a node server on the raspberry pi and have unity connect to it over the local network. You could also set up a (free Glitch server)[https://glitch.com/] to connect from any network -- the steps are the same, you'll just need to adjust the Glitch server to be the middleman that receives the messages from the raspi and unity project and sends them along to each other.
+For this guide we'll set up a node server on the raspberry pi and connect to it over the local network. You could also set up a (free Glitch server)[https://glitch.com/] to connect from any network -- the steps are the same, you'll just need to adjust the Glitch server to be the middleman that receives the messages from the raspi and unity/web project and sends them along to each other.
 
 1. cd to the "basicServer" directory and install the associated node modules:
     ```
@@ -98,7 +98,21 @@ For this guide we'll set up a node server on the raspberry pi and have unity con
     ```
 3. You can now open a webpage and check to see if it's serving on your local network. To find the local network IP address of your raspi, run the `ifconfig` command and find a line that starts with something that looks like `inet 192.168.1.5` -- I'm on wifi so for me it was under the section `wlan0`. This IP address is the address of your pi on the local network (192.168), so if your unity project is on the same wifi network, you can use this address like you would a standard URL (i.e. "192.168.1.5:8080" vs "https://example.com"). Open a webpage on another computer and go to `192.168.<your address>:8080`. If you see "Cannot GET /", that means it's working! We're not serving anything, so there's nothing for the server to pick up on (i.e. you won't see the connection message in the raspi terminal), but we know it's working because it says it's not working haha. If we stop the server script on the raspi (`CTRL-C`) and try and open the same webpage, now we'll see a "this site can't be reached" message.
 
+*Note: You may need to check your ifconfig each time you start your device. If your router has dynamically assigned IP addresses (most do), your local IP will change if other devices have been connecting/disconnecting while your pi was offline.*
+
+## Website <--> Raspi: Website Control
+
+We can also test the node server without opening our Unity project by using a simple webpage interface served by our node server. Using (p5.js)[https://p5js.org/], we'll create a super bare-bones interface that lets us check the raspi server connection.
+
+1. Assuming we've already installed the npm packages from the previous section, just run the server (need to run with `sudo`):
+    ```
+    sudo node testServer.js
+    ```
+2. Open the same webpage address as before, your pi's local IP address (like `192.168.1.5`). You should see a "hello server" message scroll across the sense hat. If you type a message in the top left input and click the "Send Message" button, that message will scroll across the pi. If you click and drag on the black cells at the bottom of the page, the cells will change color depending on which color is selected in the color picker rectangle to the left of the cells. When you release the mouse on the grid, the array will be sent to the pi and display accordingly. 
+
 https://github.com/websockets/ws
+
+https://github.com/aonghusonia/sense-hat-led
 
 https://github.com/balena-io-playground/node-sense-hat
 
