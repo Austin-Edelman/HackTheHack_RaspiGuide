@@ -106,7 +106,7 @@ We can also test the node server without opening our Unity project by using a si
 
 1. Assuming we've already installed the npm packages from the previous section, just run the server (need to run with `sudo`):
     ```
-    sudo node testServer.js
+    sudo node webServer.js
     ```
 2. Open the same webpage address as before, your pi's local IP address (like `192.168.1.5`). You should see a "hello server" message scroll across the sense hat. If you type a message in the top left input and click the "Send Message" button, that message will scroll across the pi. If you click and drag on the black cells at the bottom of the page, the cells will change color depending on which color is selected in the color picker rectangle to the left of the cells. When you release the mouse on the grid, the array will be sent to the pi and display accordingly. 
 
@@ -118,11 +118,26 @@ https://github.com/balena-io-playground/node-sense-hat
 
 ## Unity <--> Raspi Project: Hello World
 
-https://github.com/endel/NativeWebSocket
+For our basic Hello World project connecting Unity to our Raspi server, we're using a barebones Unity3D project (2020.3.12) with the [Websocket-Sharp](https://github.com/sta/websocket-sharp) library.
 
-## Unity <--> Raspi Project: Sensehat
+1. In the Unity Hub, add the project located at <REPO>/Raspi_Unity. Open it and you should see the default scene, HelloWorld.
+2. In the hierarchy, click on "ConnectionManager" and type your pi address in the "ServerURL" field of the Connection Test component (make sure to include the "ws://" at the beginning -- i.e. ws://192.168.1.10:8080). You can also change the message that will be sent to the server on connection in the "Message to Send" field.
+3. Run the server on the pi:
+    ```
+    sudo node unityServer.js
+    ```
+4. Press play in the Unity Inspector. The logs should display the connections and the sensehat will display the message sent from Unity.
 
-todo: send server color
+https://github.com/GlitchEnzo/NuGetForUnity
+https://github.com/sta/websocket-sharp
+
+## Unity <--> Raspi Project: SenseHat Frog
+
+*This demo scene uses a cute [frog asset](https://assetstore.unity.com/packages/3d/characters/animals/froggy-the-frog-quirky-series-185095) from the Unity asset store.*
+
+1. Open the SenseHatDemo scene.
+2. Run the same pi server as the previous step.
+3. Update the IP field in the "SenseHatConnectionManager" Game Object. When you run the scene, a frog will jump around a 8x8 grid and light up the sense hat pixels accordingly.
 
 ## Unity <--> Raspi Project: Camera
 
