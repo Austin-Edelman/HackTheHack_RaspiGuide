@@ -17,6 +17,7 @@ const sense = require("sense-hat-led").sync;
 //default image to display on start
 var X = [0, 0, 255];  // Blue
 var O = [100, 100, 100];  // Dim White
+var B = [0, 0, 0]; //Black/Unlit
 var leds = [
 X, X, X, X, X, X, X, X,
 X, O, O, O, O, O, O, X,
@@ -28,11 +29,23 @@ X, O, O, O, O, O, O, X,
 X, X, X, X, X, X, X, X
 ];
 
+var clearLeds = [
+B, B, B, B, B, B, B, B,
+B, B, B, B, B, B, B, B,
+B, B, B, B, B, B, B, B,
+B, B, B, B, B, B, B, B,
+B, B, B, B, B, B, B, B,
+B, B, B, B, B, B, B, B,
+B, B, B, B, B, B, B, B,
+B, B, B, B, B, B, B, B
+];
+
 sense.setPixels(leds);
 
 wss.on('connection', (ws) => {
 	console.log('client connected!');
-
+	//reset pixels on connect
+	sense.setPixels(clearLeds);
 	//send the client a welcome message when first connecting
 	ws.send('hello client!');
 
@@ -44,9 +57,9 @@ wss.on('connection', (ws) => {
 			console.log('string received: ' + data.msg);
 			sense.showMessage(data.msg);
 			ws.send("got your message! :" + data.msg);
-		} else if (data.type == 'leds') {
-			console.log('leds received');
-		 	sense.setPixels(data.leds);
+		} else if (data.type == 'led') {
+			console.log('pixel received');
+		 	sense.setPixel(data.led[0], data.led[1], [0, 255, 0]);
 		} else {
 			console.log('binary received from client' + Array.from(data).join(","));
 		}
